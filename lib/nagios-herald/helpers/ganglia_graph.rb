@@ -1,4 +1,3 @@
-require 'chef/search/query'
 
 module NagiosHerald
   module Helpers
@@ -9,6 +8,7 @@ module NagiosHerald
       #
       # Returns GangliaGraph helper object.
       def initialize
+        require 'chef/search/query'
         @ganglia_base_uri = Config.config['servers']['ganglia']
       end
 

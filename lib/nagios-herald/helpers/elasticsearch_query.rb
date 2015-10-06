@@ -1,7 +1,6 @@
 require 'net/http'
 require 'uri'
 require 'json'
-require 'elasticsearch'
 
 # Query Elasticsearch with arbitrary search criteria
 
@@ -26,6 +25,7 @@ module NagiosHerald
       #
       # Returns a new ElasticsearchQuery object.
       def initialize(options={})
+        require 'elasticsearch'
         today = Time.now.strftime("%Y.%m.%d")
         @elasticsearch_index = options[:index] ? options[:index] : "logstash-#{today}"
         @elasticsearch_time_period = options[:time_period] ? options[:time_period] : "1h"
