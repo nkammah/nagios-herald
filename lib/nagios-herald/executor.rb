@@ -73,10 +73,11 @@ module NagiosHerald
           default nil
         end
 
-        option :message_type, :required => true do
+        option :message_type do
           short   "-m"
           long    "--message-type"
-          desc    "[REQUIRED] Type of message to deliver (i.e. email, IRC, pager)"
+          desc    "Type of message to deliver (i.e. email, IRC, pager)"
+          default "email"
         end
 
         option :no_send do
@@ -118,10 +119,11 @@ module NagiosHerald
           desc  "Nagios CGI url (used for acknowledgement links)"
         end
 
-        option :replyto, :required => true do
+        option :replyto do
           short "-y"
           long  "--reply-to"
-          desc  "[REQUIRED] Reply-to email address (i.e. nagios@example.com) used for acknowledgement replies."
+          desc  "Reply-to email address (i.e. nagios@example.com) used for acknowledgement replies."
+          default "nagios@example.com"
         end
 
         footer ""
