@@ -239,10 +239,10 @@ module NagiosHerald
           end
           message_class = Message.message_types[@options.message_type]
           message = message_class.new(recipient, @options)
-
           formatter_class = Formatter.formatters[@options.formatter_name]
           if formatter_class.nil?
-              logger.info "Undefined formatter. Defaulting to the base formatter."
+              logger.info "Formatter not found - known formatters are : #{Formatter.formatters.keys.join(', ')}"
+              logger.info "Defaulting to the base formatter."
               formatter_class = NagiosHerald::Formatter   # default to the base formatter
           end
           formatter = formatter_class.new(@options)
