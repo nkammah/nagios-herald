@@ -35,6 +35,15 @@ def drawStackBars(series, options):
     stacked_bars.render(series)
     stacked_bars.save(options.get('output_file'))
 
+def setDefaultColors(options):
+    #import pdb;pdb.set_trace()
+    if options.draw_mode == "percentage":
+        options.full_color = options.full_color or '#00e600'
+        options.empty_color = options.empty_color or '#FF0000'
+    elif options.draw_mode == "absolute":
+        options.full_color = options.full_color or '#3333ff'
+    return options
+
 def parse_options():
     usage = "usage: %prog [options] label=value label=value"
 
@@ -60,11 +69,31 @@ def parse_options():
                     help="Width of the border around the bars",
                     dest="bar_border", default=1)
 
+    parser.add_option("-m", "--mode", type="choice",
+                    help="Drawing mode : percentage, absolute",
+                    choices = ['percentage', 'absolute'],
+                    dest="draw_mode", default="percentage")
+
+    parser.add_option("--full-color", type="string",
+                    help="Color for full bars (eg. #00e600)",
+                    dest="full_color")
+
+    parser.add_option("--empty-color", type="string",
+                    help="Color for empty bars (eg. #00e600)",
+                    dest="empty_color")
+
+    parser.add_option("--font", type="choice",
+                    help="Font to use",
+                    choices = ['aerial', 'arial_black', 'Tahoma'],
+                    dest="font_name", default = "arial_black")
+
+
     options, data = parser.parse_args()
     if not data:
         sys.stderr.write("No  data to plot !\n\n")
         parser.print_help()
         sys.exit(1)
+    options = setDefaultColors(options)
     return options, data
 
 if __name__=='__main__':

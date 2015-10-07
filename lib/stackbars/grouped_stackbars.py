@@ -17,13 +17,15 @@ class GroupedStackbars:
         self.bar_height_ratio = options.get('bar_height_ratio', .2)
         assert self.bar_height_ratio <=1, "bar_height_ratio must be <= 1"
 
-        self.font_type = options.get('font_type', get_font('arial_black.ttf'))
+        font_name = "%s.ttf" % options.get('font_name', 'arial_black')
+        self.font_type =  get_font(font_name)
         self.min_font_size = 15
 
         self.img = None
         self.draw = None
 
         self.stack_bars = []
+        self.draw_mode = options.get('draw_mode', 'percentage')
 
     def initializeDims(self, data, optimize_bar_area_width = True):
         self.bars_width = int(self.bar_area_ratio * self.width)
@@ -37,7 +39,7 @@ class GroupedStackbars:
         optimal_font_size = get_optimal_font_size(
             self.draw,
             self.font_type,
-            self.width -self.bars_width,
+            self.width - self.bars_width,
             self.bar_height,
             longest_label,
             self.min_font_size
@@ -66,26 +68,58 @@ class GroupedStackbars:
     def initiliazeStackBars(self, data):
         self.stack_bars = []
         # get the dimensions for the gauges area and for the text area
-        for label, value in data:
-            sb = Stackbar(self.draw, label, value, self.options)
+        for label, value, fill_value in data:
+            sb = Stackbar(self.draw, label, value, fill_value, self.options)
             self.stack_bars.append(sb)
 
     def renderStackBars(self):
         offset = 0
         for i, sb in enumerate(self.stack_bars):
             draw_bottom_border = i == (len(self.stack_bars) - 1)
-            sb.render(self.width, offset, self.bars_width, self.bar_height, self.font_size, draw_bottom_border)
+            if self.draw_mode == "percentage":
+                sb.render_percentage(self.width, offset, self.bars_width, self.bar_height, self.font_size, draw_bottom_border)
+            elif self.draw_mode == "absolute":
+                sb.render_absolute(self.width, offset, self.bars_width, self.bar_height, self.font_size, draw_bottom_border)
             offset += self.bar_height
 
+    # Format the data
+    # to always make sure the max value is 100
+    # in an absolute mode
+    # in percentage mode, raise an exception if the value > 100
+    # example input : [('ios-boe-aatp-tests', 180), ('android-boe-aatp-tests', 10)]
+    # output : [('ios-boe-aatp-tests', 180, 100), ('android-boe-aatp-tests', 10, 10 * 100  / 180)]
+    def format_data(self, data):
+        # Find the max input
+        max_val = 0
+        formatted_data = []
+
+        for k,v in data:
+            if self.draw_mode == "percentage":
+                assert v <= 100, "percentage draw mode : invalid fill value for %s - must be <= 100" %k
+            elif self.draw_mode == "absolute":
+                max_val = max(max_val, v)
+
+        for k,v in data:
+            value = v
+            fill_value = v
+            if self.draw_mode == "percentage":
+                value = "%i%%" % value
+            elif self.draw_mode == "absolute":
+                fill_value = v * 100. / max_val
+
+            formatted_data.append([k,str(value),fill_value])
+        return formatted_data
+
     def render(self, data):
-        if not data:
+        formatted_data = self.format_data(data)
+        if not formatted_data:
             return
 
         # Initialize the drawing area
-        self.initializeDims(data)
+        self.initializeDims(formatted_data)
 
         # Create new stack bars
-        self.initiliazeStackBars(data)
+        self.initiliazeStackBars(formatted_data)
 
         # render each gauge according to the optimal dims
         self.renderStackBars()
